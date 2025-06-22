@@ -1,11 +1,11 @@
 from flask import Blueprint, jsonify, request
 from use_cases.task_use_case import TaskUseCase
 from infra.repositories.task_repository_sqlite import TaskRepository
+from flask import Blueprint, jsonify, request, render_template 
 
 task_bp = Blueprint("task", __name__)
 repo = TaskRepository()
 use_case = TaskUseCase(repo)
-
 
 @task_bp.route("/", methods=["GET"])
 def get_tasks():
@@ -14,7 +14,12 @@ def get_tasks():
 @task_bp.route("/", methods=["POST"])
 def add_task():
     data = request.json
-    task = use_case.create_task(data["title"], data.get("description", ""))
+    task = use_case.create_task(
+        title=data["title"],
+        description=data.get("description", ""),
+        due_date=data.get("due_date"),
+        priority=data.get("priority", "media")
+    )
     return jsonify(task.to_dict()), 201
 
 @task_bp.route("/<int:task_id>", methods=["PUT"])
@@ -24,6 +29,8 @@ def update_task(task_id):
         task_id,
         title=data.get("title"),
         description=data.get("description"),
+        due_date=data.get("due_date"),
+        priority=data.get("priority"),
         completed=data.get("completed")
     )
     if updated_task:
@@ -35,4 +42,7 @@ def delete_task(task_id):
     success = use_case.delete_task(task_id)
     return ("", 204) if success else ({"error": "Tarefa não encontrada"}, 404)
 
-    
+@task_bp.route("/create", methods=["GET"])
+def show_create_form():
+    return render_template("create_task.html")
+

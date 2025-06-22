@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Criar Tarefa</title>
+</head>
+<body>
+    <h1>Criar Nova Tarefa</h1>
+    <form action="/create" method="POST">
+        <label for="title">Título:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="description">Descrição:</label><br>
+        <textarea id="description" name="description" rows="4" cols="40"></textarea><br><br>
+
+        <label for="due_date">Data de validade:</label><br>
+        <input type="date" id="due_date" name="due_date"><br><br>
+
+        <label for="priority">Prioridade:</label><br>
+        <select id="priority" name="priority">
+            <option value="baixa">Baixa</option>
+            <option value="media">Média</option>
+            <option value="alta">Alta</option>
+        </select><br><br>
+
+        <input type="submit" value="Criar Tarefa">
+    </form>
+    <br>
+    <a href="/">Voltar para lista</a>
+</body>
+</html>
