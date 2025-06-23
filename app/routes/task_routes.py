@@ -14,7 +14,7 @@ def get_tasks():
 @task_bp.route("/", methods=["POST"])
 def add_task():
     data = request.json
-    task = use_case.create_task(data["title"], data.get("description", ""))
+    task = use_case.create_task(data["title"], data.get("description", ""), data.get("user_id"))
     return jsonify(task.to_dict()), 201
 
 @task_bp.route("/<int:task_id>", methods=["PUT"])
@@ -24,7 +24,8 @@ def update_task(task_id):
         task_id,
         title=data.get("title"),
         description=data.get("description"),
-        completed=data.get("completed")
+        completed=data.get("completed"),
+        user_id=data.get("user_id")
     )
     if updated_task:
         return jsonify(updated_task.to_dict())
@@ -35,4 +36,7 @@ def delete_task(task_id):
     success = use_case.delete_task(task_id)
     return ("", 204) if success else ({"error": "Tarefa não encontrada"}, 404)
 
-    
+@task_bp.route("/user/<int:user_id>", methods=["GET"])
+def get_tasks_by_user(user_id):
+    tasks = use_case.get_tasks_by_user(user_id)
+    return jsonify([task.to_dict() for task in tasks])    

@@ -15,3 +15,6 @@ class TaskUseCase:
 
     def delete_task(self, task_id):
         return self.repository.delete(task_id)
+    
+    def get_tasks_by_user(self, user_id):
+        return [task for task in self.repository.get_all() if task.user_id == user_id]
