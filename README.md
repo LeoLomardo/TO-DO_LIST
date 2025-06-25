@@ -1,6 +1,6 @@
-# Flask Clean Architecture Example
+# TO DO App
 
-Este projeto demonstra uma estrutura simples seguindo os principios de Clean Architecture e SOLID usando Flask e SQLite.
+Este projeto demonstra uma estrutura simples seguindo os principios de Clean Architecture e SOLID usando Flask e SQLite para criar um app de TODO list.
 
 ## Estrutura
 - `app/` – aplicação Flask e blueprints de rotas
