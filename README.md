@@ -24,7 +24,7 @@ pip install flask pytest
 python main.py
 ```
 
-Abra `http://localhost:5000` em seu navegador para acessar a interface web.
+Abra o link que aparece no terminal pelo seu navegador de preferência.
 
 ## Testes
 
