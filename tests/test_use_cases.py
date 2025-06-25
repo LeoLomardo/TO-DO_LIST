@@ -1,11 +1,14 @@
+from domain.repositories.user_repository import UserRepository
 import pytest
 from domain.task import Task
+from domain.user import User
 from use_cases.add_task import AddTaskUseCase
 from use_cases.list_tasks import ListTasksUseCase
 from use_cases.delete_task import DeleteTaskUseCase
 from use_cases.toggle_task_status import ToggleTaskStatusUseCase
+from use_cases.add_user import AddUserUseCase
+from use_cases.find_user_by_email import FindUserByEmailUseCase
 from domain.repositories.task_repository import TaskRepository
-
 
 class InMemoryTaskRepository(TaskRepository):
     def __init__(self):
@@ -40,6 +43,24 @@ class InMemoryTaskRepository(TaskRepository):
                 break
         return task
 
+class InMemoryUserRepository:
+    def __init__(self):
+        self.users = []
+        self.counter = 1
+
+    def add(self, user: User):
+        user.id = self.counter
+        self.counter += 1
+        self.users.append(user)
+        return user
+
+    def get_by_email(self, email):
+        for u in self.users:
+            if u.email == email:
+                return u
+        return None
+
+# ---- TESTES DE TASKS ----
 
 def test_add_and_list_tasks():
     repo = InMemoryTaskRepository()
@@ -53,25 +74,19 @@ def test_add_and_list_tasks():
     assert len(tasks) == 1
     assert tasks[0].title == 'Test'
 
-
 def test_delete_task():
     repo = InMemoryTaskRepository()
     add_use_case = AddTaskUseCase(repo)
     delete_use_case = DeleteTaskUseCase(repo)
     list_use_case = ListTasksUseCase(repo)
 
-    task1 = add_use_case.execute(
-        Task(id=0, title='t1', description='', user_id=1)
-    )
-    task2 = add_use_case.execute(
-        Task(id=0, title='t2', description='', user_id=1)
-    )
+    task1 = add_use_case.execute(Task(id=0, title='t1', description='', user_id=1))
+    task2 = add_use_case.execute(Task(id=0, title='t2', description='', user_id=1))
 
     delete_use_case.execute(task1.id)
     tasks = list_use_case.execute()
     assert len(tasks) == 1
     assert tasks[0].id == task2.id
-
 
 def test_toggle_task_status():
     repo = InMemoryTaskRepository()
@@ -83,7 +98,6 @@ def test_toggle_task_status():
 
     toggled = toggle_uc.execute(task.id)
     assert toggled.completed
-
 
 def test_list_by_user():
     repo = InMemoryTaskRepository()
@@ -99,7 +113,6 @@ def test_list_by_user():
     assert len(tasks_user2) == 1
     assert tasks_user2[0].user_id == 2
 
-
 def test_update_task():
     repo = InMemoryTaskRepository()
     add_uc = AddTaskUseCase(repo)
@@ -109,19 +122,15 @@ def test_update_task():
     updated = repo.get(task.id)
     assert updated.title == 'new'
 
-
 def test_get_task():
     repo = InMemoryTaskRepository()
     add_uc = AddTaskUseCase(repo)
-    task = add_uc.execute(
-        Task(id=0, title='findme', description='', user_id=1)
-    )
+    task = add_uc.execute(Task(id=0, title='findme', description='', user_id=1))
     found = repo.get(task.id)
     not_found = repo.get(999)
     assert found is not None
     assert found.title == 'findme'
     assert not_found is None
-
 
 def test_delete_nonexistent_task():
     repo = InMemoryTaskRepository()
@@ -130,33 +139,15 @@ def test_delete_nonexistent_task():
     repo.delete(999)  # Should not raise
     assert len(repo.list()) == 1
 
-
 def test_toggle_nonexistent_task():
     repo = InMemoryTaskRepository()
     toggle_uc = ToggleTaskStatusUseCase(repo)
     with pytest.raises(ValueError, match="Task not found"):
         toggle_uc.execute(999)
 
+# ---- TESTES DE USUÁRIO ----
 
 def test_add_user():
-    from domain.user import User
-    from use_cases.add_user import AddUserUseCase
-
-    class InMemoryUserRepository:
-        def __init__(self):
-            self.users = []
-            self.counter = 1
-        def add(self, user):
-            user.id = self.counter
-            self.counter += 1
-            self.users.append(user)
-            return user
-
-        def get_by_email(self, email):
-            for u in self.users:
-                if u.email == email:
-                    return u
-            return None
     repo = InMemoryUserRepository()
     add_uc = AddUserUseCase(repo)
     user = User(id=0, name='Test', email='test@email.com')
@@ -164,3 +155,14 @@ def test_add_user():
     assert added.id == 1
     assert added.name == 'Test'
     assert repo.get_by_email('test@email.com') is not None
+
+def test_find_user_by_email():
+    repo = InMemoryUserRepository()
+    add_uc = AddUserUseCase(repo)
+    find_uc = FindUserByEmailUseCase(repo)
+    user = User(id=0, name='Test', email='test@email.com')
+    add_uc.execute(user)
+    found = find_uc.execute('test@email.com')
+    assert found is not None
+    assert found.name == 'Test'
+    assert found.email == 'test@email.com'
